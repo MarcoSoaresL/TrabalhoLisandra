@@ -1,0 +1,5 @@
+# Depois de instalar e testar, rode `pip freeze > requirements.txt`
+# para PINAR as versoes exatas (exigido no enunciado, secao 7).
+langgraph
+langchain-core
+langchain-ollama
