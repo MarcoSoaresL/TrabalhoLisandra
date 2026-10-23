@@ -1,17 +1,30 @@
+> *Palavras-chave & Conceitos: Design Patterns, GoF, Padrão State, Máquina de Estados Finita (FSM), Polimorfismo, Encapsulamento de Estado, Refatoração de Condicionais, Context, ConcreteState.
 
-## Intencao
-Permitir que um objeto altere seu comportamento quando seu estado interno muda. O objeto parece ter mudado de classe.
+## Intenção do Padrão State
+Permitir que um objeto altere seu comportamento quando seu estado interno muda. O objeto parece ter mudado de classe, eliminando a necessidade de grandes estruturas condicionais controladas por variáveis de estado.
 
-## Problema
-Uma classe com varios if/switch sobre um atributo de estado, repetidos em muitos metodos (ex.: Pedido com status Novo, Pago, Enviado).
+## Problema e Contexto
+Uma classe precisa alterar seu comportamento dependendo do seu estado atual (exemplo: classe Pedido com status Novo, Pago, Enviado, Cancelado).
+Sem o padrão State, os métodos do objeto acumulam múltiplos blocos if/else ou switch/case repetidos em vários métodos para verificar o estado antes de executar qualquer ação, tornando o código rígido e propenso a erros de manutenção.
 
-## Participantes
-- Context: mantem referencia ao estado atual e delega o comportamento a ele (ex.: Pedido).
-- State: interface com as operacoes dependentes de estado (ex.: EstadoPedido).
-- ConcreteState: implementa o comportamento de um estado (ex.: EstadoNovo, EstadoPago, EstadoEnviado).
+## Participantes do Padrão State
+- Context (Pedido): Mantém uma referência para uma instância de State que representa o estado atual. Delega o comportamento específico do estado para a instância de State.
+- State (EstadoPedido):** Interface ou classe abstrata que define as operações dependentes de estado.
+- ConcreteState (EstadoNovo, EstadoPago, EstadoEnviado): Cada subclasse implementa o comportamento associado a um estado específico do Context.
 
-## Transicoes
-Podem ser feitas pelo Context ou pelos proprios ConcreteStates. No exemplo abaixo, os ConcreteStates trocam o estado do Context.
+## Controle de Transição de Estados
+As transições podem ser executadas de duas formas:
+1. Pelos ConcreteStates (Mais comum): Cada classe de estado decide qual é o próximo estado e chama context.setEstado(new ProximoEstado()).
+2. Pelo Context: O Context avalia o resultado das chamadas e centraliza as regras de mudança de estado.
+
+## Diagrama de Transição de Estados
+```mermaid
+stateDiagram-v2
+    [*] --> EstadoNovo
+    EstadoNovo --> EstadoPago : pagar()
+    EstadoPago --> EstadoEnviado : enviar()
+    EstadoNovo --> [*] : erro ao enviar
+    EstadoPago --> [*] : erro ao pagar
 
 ## Consequencias
 - (+) Comportamento de cada estado fica localizado em uma classe.
