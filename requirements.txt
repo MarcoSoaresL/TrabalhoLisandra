@@ -3,3 +3,7 @@
 langgraph
 langchain-core
 langchain-ollama
+langchain
+langchain-community
+faiss-cpu
+tiktoken

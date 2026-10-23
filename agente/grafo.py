@@ -8,6 +8,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 
 from . import config, prompts
+from .rag import rag_service as default_rag_service 
 
 
 class EstadoGrafo(TypedDict, total=False):
@@ -17,6 +18,7 @@ class EstadoGrafo(TypedDict, total=False):
     feedback: str
     tentativas: int
     aprovada: bool
+    contexto: str 
 
 
 AGENTE_POR_INTENCAO = {
@@ -35,7 +37,9 @@ _PADRAO_INVENTADO = re.compile(r"padr[ãa]o\s+(?:chamado|denominado|de nome)\s+[
 
 
 def _texto(msg) -> str:
-    return msg.content if isinstance(msg.content, str) else str(msg.content)
+    if isinstance(msg, str):
+        return msg
+    return getattr(msg, "content", str(msg))
 
 
 def detectar_padrao_inventado(texto: str) -> bool:
@@ -44,7 +48,9 @@ def detectar_padrao_inventado(texto: str) -> bool:
     return bool(m) and m.group(1).strip().lower() not in config.PADROES_GOF
 
 
-def montar_grafo(llm, conhecimento: str):
+def montar_grafo(llm, rag_service=None):
+    rag = rag_service or default_rag_service
+
     def chamar(system: str, msgs: list[BaseMessage]) -> str:
         return _texto(llm.invoke([SystemMessage(content=system)] + msgs)).strip()
 
@@ -71,12 +77,15 @@ def montar_grafo(llm, conhecimento: str):
 
     def criar_agente(chave: str):
         def no(state: EstadoGrafo):
-            system = prompts.montar_system(PAPEIS[chave], conhecimento)
+            ultima_msg = _texto(state["messages"][-1])
+
+            contexto = rag.buscar_contexto(ultima_msg)
+            system = prompts.montar_system(PAPEIS[chave], contexto)
             system += "\n\n" + prompts.INSTRUCAO_POR_INTENCAO[state["intencao"]]
             if state.get("feedback"):
                 system += f"\n\nREVISAO PEDIDA PELO GUARDIAO: {state['feedback']} Corrija a resposta."
             hist = state["messages"][-config.MAX_MENSAGENS_HISTORICO:]
-            return {"rascunho": chamar(system, hist)}
+            return {"rascunho": chamar(system, hist), "contexto": contexto}
         return no
 
     def recusa(texto: str):
@@ -86,16 +95,18 @@ def montar_grafo(llm, conhecimento: str):
 
     def guardiao(state: EstadoGrafo):
         rascunho = state.get("rascunho", "")
+        contexto_usado = state.get("contexto", "Material sobre o padrão State.")
         if not rascunho:
             return {"aprovada": True, "messages": [AIMessage(content="Nao consegui gerar uma resposta. Pode reformular?")]}
         try:
             veredito = chamar(
                 prompts.GUARDIAO_SYSTEM,
                 [__import__("langchain_core.messages", fromlist=["HumanMessage"]).HumanMessage(
-                    content=f"MATERIAL:\n{conhecimento}\n\nRESPOSTA:\n{rascunho}")],
+                    content=f"MATERIAL:\n{contexto_usado}\n\nRESPOSTA:\n{rascunho}")],
             )
         except Exception:
             veredito = "OK"  # falha do revisor nao deve derrubar o sistema
+
         if veredito.upper().startswith("REVISAR") and state.get("tentativas", 0) < config.MAX_TENTATIVAS_GUARDIAO:
             return {"aprovada": False, "feedback": veredito, "tentativas": state.get("tentativas", 0) + 1}
         texto = rascunho

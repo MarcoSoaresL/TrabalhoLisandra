@@ -32,5 +32,4 @@ class Sistema:
 
 
 def montar_sistema() -> Sistema:
-    conhecimento = config.CONHECIMENTO.read_text(encoding="utf-8")
-    return Sistema(montar_grafo(get_llm(), conhecimento))
+    return Sistema(montar_grafo(get_llm()))
