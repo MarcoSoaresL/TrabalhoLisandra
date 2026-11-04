@@ -1,8 +1,3 @@
-"""Roda o roteiro de cenarios do enunciado (secao 6) contra o sistema e salva
-as respostas em docs/resultados_roteiro.md.
-
-Uso: python scripts/rodar_roteiro.py
-"""
 import sys
 import time
 from datetime import datetime
@@ -11,8 +6,8 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
-from agente import config  # noqa: E402
-from agente.sistema import montar_sistema  # noqa: E402
+from agente import config 
+from agente.sistema import montar_sistema  
 
 CENARIOS = [
     ("Conceitual", "Explique o que é o padrão State e qual problema ele resolve."),
@@ -25,7 +20,7 @@ CENARIOS = [
     ("Fechamento", "O que devo lembrar antes de usar o padrão State?"),
 ]
 
-# Conversa de varios turnos: mostra memoria, exercicio e diagnostico de erro
+# mostra memoria, exercicio e diagnostico de erro
 CONVERSA = [
     "Quero praticar. Me passe um exercício sobre o padrão State.",
     "Acho que é Strategy, porque nos dois casos tem uma interface com várias implementações.",
@@ -42,7 +37,7 @@ def main():
     for categoria, pergunta in CENARIOS:
         print(f"[{categoria}] ...", flush=True)
         inicio = time.time()
-        resposta = montar_sistema().resposta(pergunta)  # sistema novo: cada cenario e independente
+        resposta = montar_sistema().resposta(pergunta)  #cada cenario e independente
         linhas += [f"## {categoria}", "", f"**Pergunta:** {pergunta}", "",
                    f"**Tempo:** {time.time() - inicio:.0f} s", "", "**Resposta:**", "", resposta, "", "---", ""]
 

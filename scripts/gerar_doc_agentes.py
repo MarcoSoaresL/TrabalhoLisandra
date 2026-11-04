@@ -1,15 +1,10 @@
-"""Gera docs/agentes.md a partir de agente/prompts.py, para a documentacao
-sempre mostrar exatamente os prompts que o sistema usa.
-
-Uso: python scripts/gerar_doc_agentes.py
-"""
 import sys
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
-from agente import prompts  # noqa: E402
+from agente import prompts 
 
 CABECALHO = """# Documentação dos agentes
 

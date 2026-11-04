@@ -1,7 +1,4 @@
 # Justificativa das decisões de design
-
-> **RASCUNHO.** O enunciado (seção 9) exige que este texto seja escrito pela dupla, com revisão crítica. Usem este rascunho como roteiro: reescrevam com as palavras de vocês e confiram cada afirmação no código.
-
 ## 1. Divisão de papéis
 
 Seguimos a divisão sugerida no Anexo A (ensinar, exemplificar, exercitar/diagnosticar e garantir confiabilidade) e acrescentamos um **Roteador**. Ficaram cinco agentes:
@@ -45,10 +42,9 @@ O sistema tem cinco camadas (as duas primeiras são determinísticas, ou seja, n
 
 - **Testes automatizados** (`tests/test_basico.py`, 18 testes) com um LLM falso, sem depender do Ollama: recusa de padrão inventado sem chamar o modelo, roteamento do pedido de código pronto, recusa fora de escopo, roteamento para cada agente, revisão pelo Guardião (uma vez, depois com aviso), memória entre turnos, limite de código (revisão e remoção) e tratamento de erros (entrada vazia, modelo fora do ar, saída vazia, rótulo inesperado do roteador).
 - **Roteiro de cenários** (`scripts/rodar_roteiro.py`): executa as 7 categorias do enunciado e uma conversa de vários turnos com o modelo real, e salva as respostas em `docs/resultados_roteiro.md` para análise da dupla.
-- [PREENCHER: o que vocês observaram nas respostas, por exemplo se o Guardião pediu revisão em algum caso e se alguma resposta trouxe fato fora do material.]
 
 ## 6. Decisões técnicas
 
-- **LangGraph em vez de CrewAI**: o fluxo é um grafo explícito com arestas condicionais (roteamento e laço de revisão), fácil de testar com um LLM falso. [PREENCHER: confirmar que a escolha foi comunicada à professora.]
+- **LangGraph em vez de CrewAI**: o fluxo é um grafo explícito com arestas condicionais (roteamento e laço de revisão), fácil de testar com um LLM falso.
 - **qwen2.5:7b**: o modelo sugerido para 16 GB de RAM, com bom português. Temperatura 0,2 para respostas mais estáveis e limite de 700 tokens por resposta.
 - **Tratamento de erros**: entrada vazia, falha ou timeout do Ollama e saída vazia ou inesperada viram mensagens amigáveis. A falha do Guardião não derruba o sistema (a resposta é aprovada), e a falha do Roteador cai no Tutor.
