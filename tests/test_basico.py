@@ -12,8 +12,6 @@ class GrafoQuebrado:
 
 
 class LLMFalso:
-    """Simula o Ollama: responde conforme o prompt de sistema de cada agente."""
-
     def __init__(self, rotulo="conceito", vereditos=("OK",)):
         self.rotulo = rotulo
         self.vereditos = list(vereditos)
@@ -123,8 +121,6 @@ def test_memoria_entre_turnos():
     historico = [m.content for m in llm.chamadas[-2][1]]  # mensagens vistas pelo tutor no 2o turno
     assert historico == ["Primeira pergunta", "resposta do Tutor do conceito", "Segunda pergunta"]
 
-
-# --- limite de codigo por agente (regra deterministica do guardiao) -------
 
 CODIGO_LONGO = "Veja:\n```java\n" + "\n".join(f"linha{i};" for i in range(30)) + "\n```\nTente agora."
 

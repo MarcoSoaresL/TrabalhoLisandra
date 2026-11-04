@@ -1,7 +1,3 @@
-"""Prompts de sistema (Anexo B: ROLE/GOAL/BACKSTORY + escopo, estrategia, exemplos,
-casos de erro, regras anti-alucinacao e formato).
-O material de referencia recuperado pelo RAG e injetado em tempo de execucao."""
-
 REGRAS_ANTI_ALUCINACAO = """REGRAS ANTI-ALUCINACAO
 - Use SOMENTE o MATERIAL DE REFERENCIA abaixo para fatos sobre o padrao State.
 - Nao invente padroes, participantes, consequencias, nomes de classes ou exemplos que nao estejam no material.

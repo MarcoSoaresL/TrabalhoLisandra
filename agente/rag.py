@@ -1,8 +1,4 @@
-"""RAG local: o material de referencia (state.md) e indexado com embeddings do
-Ollama em um indice FAISS salvo em disco. Os agentes recebem apenas os trechos
-relevantes para a pergunta, e o guardiao confere a resposta contra esses trechos."""
 import hashlib
-
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_ollama import OllamaEmbeddings
@@ -37,7 +33,7 @@ class StateRAG:
             return FAISS.load_local(str(self.caminho_indice), self.embeddings,
                                     allow_dangerous_deserialization=True)  # arquivo gerado por nos mesmos
 
-        # Divide primeiro por secao (##), para cada trecho ser um assunto completo
+        # Divide primeiro por secao
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=config.RAG_TAMANHO_TRECHO,
             chunk_overlap=150,
@@ -61,7 +57,6 @@ _instancia = None
 
 
 def get_rag_service() -> StateRAG:
-    """Cria o indice so na primeira busca, para o import nao exigir o Ollama."""
     global _instancia
     if _instancia is None:
         _instancia = StateRAG()

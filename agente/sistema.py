@@ -7,7 +7,6 @@ from .llm import get_llm
 
 
 class Sistema:
-    """Fachada exigida pelo enunciado: sistema.resposta(pergunta)."""
 
     def __init__(self, grafo):
         self.grafo = grafo
@@ -17,7 +16,6 @@ class Sistema:
         return self.responder(pergunta)["texto"]
 
     def responder(self, pergunta: str) -> dict:
-        """Como resposta(), mas informa tambem a intencao detectada (usado pela interface web)."""
         pergunta = (pergunta or "").strip()
         if not pergunta:
             return {"texto": "Voce nao digitou nada. Pergunte algo sobre o padrao State.", "intencao": None}
@@ -31,7 +29,7 @@ class Sistema:
                 return {"texto": "Recebi uma saida inesperada do modelo. Pode reformular a pergunta?",
                         "intencao": None}
             return {"texto": texto, "intencao": saida.get("intencao")}
-        except Exception as e:  # Ollama fora do ar, timeout, modelo ausente...
+        except Exception as e:  # Ollama fora do ar, timeout
             return {"texto": (f"Falha ao consultar o modelo local ({type(e).__name__}). "
                               f"Verifique se o Ollama esta rodando e se o modelo '{config.MODELO}' foi baixado."),
                     "intencao": None}

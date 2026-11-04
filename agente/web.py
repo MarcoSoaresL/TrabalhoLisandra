@@ -1,11 +1,3 @@
-"""Interface web opcional (secao 5 do enunciado): um chat no navegador.
-
-Usa so a biblioteca padrao do Python e nao carrega nada da internet, entao roda
-offline, como o resto do sistema. A CLI `python -m agente` continua sendo a
-interface oficial.
-
-Uso: python -m agente.web [--porta 8000] [--sem-navegador]
-"""
 import argparse
 import json
 import sys
@@ -41,8 +33,6 @@ def nome_do_agente(intencao):
 
 
 class Sessoes:
-    """Um Sistema (com memoria propria) por aba do navegador, todos sobre o mesmo grafo."""
-
     def __init__(self, criar_sistema):
         self.criar_sistema = criar_sistema
         self.sessoes = {}
@@ -115,7 +105,6 @@ def criar_servidor(criar_sistema, porta=8000):
             else:
                 self._responder(404, {"erro": "nao encontrado"})
 
-    # 127.0.0.1: acessivel so nesta maquina
     return ThreadingHTTPServer(("127.0.0.1", porta), Handler)
 
 
@@ -131,7 +120,7 @@ def main():
     args = parser.parse_args()
 
     from .llm import get_llm
-    grafo = montar_grafo(get_llm())  # um grafo para todos; a memoria e separada por thread_id
+    grafo = montar_grafo(get_llm())  # memoria separada por thread_id
     try:
         servidor = criar_servidor(lambda: Sistema(grafo), args.porta)
     except OSError:

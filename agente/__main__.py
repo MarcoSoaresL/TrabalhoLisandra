@@ -3,7 +3,6 @@ from .sistema import montar_sistema
 
 
 def _configurar_saida():
-    """No Windows a saida redirecionada (roteiro automatizado) nao e UTF-8 por padrao."""
     for fluxo in (sys.stdout, sys.stderr):
         try:
             fluxo.reconfigure(encoding="utf-8")

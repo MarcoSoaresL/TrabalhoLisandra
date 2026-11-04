@@ -41,10 +41,8 @@ PAPEIS = {
     "inquiridor": prompts.INQUIRIDOR,
 }
 
-# "padrao chamado Zeta", "padrao denominado X"...
 _PADRAO_CHAMADO = re.compile(
     r"padrao\s+(?:de projeto\s+)?(?:chamado|denominado|de nome|nomeado)\s+[\"']?([\w\- ]+?)[\"']?(?:\s+e\s|[,.?!]|$)")
-# "padrao Zeta" (nome proprio com inicial maiuscula logo apos "padrao")
 _PADRAO_NOME_PROPRIO = re.compile(r"[Pp]adrao\s+(?:de projeto\s+)?([A-Z][\w\-]*(?:\s+[A-Z][\w\-]*)?)")
 _PEDIDO_INVENCAO = re.compile(r"\b(invente|inventar|inventa|crie|criar|cria)\s+(um|uma|o|a)?\s*(novo\s+)?padrao\b")
 _PEDIDO_CODIGO_PRONTO = re.compile(
@@ -64,13 +62,12 @@ def _texto(msg) -> str:
 def _eh_padrao_gof(nome: str) -> bool:
     nome = nome.strip().lower()
     primeira = nome.split()[0] if nome else ""
-    # "Chain of Responsibility" e capturado so como "Chain": basta a primeira palavra bater
     return nome in config.PADROES_GOF or primeira == "gof" or any(
         p.split()[0] == primeira for p in config.PADROES_GOF)
 
 
 def detectar_padrao_inventado(texto: str) -> bool:
-    """Regra deterministica anti-alucinacao: pedido de invencao ou nome fora do catalogo GoF."""
+    # Regra anti-alucinacao
     texto = _sem_acentos(texto)
     if _PEDIDO_INVENCAO.search(texto.lower()):
         return True
@@ -81,7 +78,6 @@ def detectar_padrao_inventado(texto: str) -> bool:
 
 
 def detectar_pedido_codigo_pronto(texto: str) -> bool:
-    """Regra deterministica: pedidos explicitos de solucao pronta nao dependem do LLM."""
     return bool(_PEDIDO_CODIGO_PRONTO.search(_sem_acentos(texto).lower()))
 
 
@@ -95,24 +91,21 @@ _OUTRO_ALFABETO = re.compile(r"[぀-ヿ㐀-䶿一-鿿가-힯]")  # chines, japon
 
 
 def mudou_de_idioma(texto: str) -> bool:
-    """O qwen as vezes troca para chines no meio da resposta."""
+    # casos que troca de idioma
     return bool(_OUTRO_ALFABETO.search(texto))
 
 
 def maior_bloco_codigo(texto: str) -> int:
-    """Numero de linhas do maior bloco de codigo da resposta."""
     return max((len(b.strip().splitlines()) for b in _BLOCO_CODIGO.findall(texto)), default=0)
 
 
 def remover_codigo_longo(texto: str, limite: int, aviso: str = AVISO_CODIGO_OMITIDO) -> str:
-    """Troca blocos acima do limite por um aviso: o aluno nunca recebe a solucao pronta."""
     def trocar(m):
         return m.group(0) if len(m.group(1).strip().splitlines()) <= limite else aviso
     return _BLOCO_CODIGO.sub(trocar, texto)
 
 
 def interpretar_rotulo(saida: str) -> str:
-    """Extrai a intencao da saida do roteador; saida inesperada vira 'conceito'."""
     saida = _sem_acentos(saida).lower().replace(" ", "_")
     validos = sorted([*AGENTE_POR_INTENCAO, "fora_escopo"], key=len, reverse=True)
     return next((r for r in validos if r in saida), "conceito")
@@ -137,7 +130,6 @@ def montar_grafo(llm, rag_service=None):
             saida = ""  # sem roteador, cai no tutor
         intencao = interpretar_rotulo(saida)
         # Depois de um exercicio proposto, a resposta do aluno e uma tentativa a ser avaliada
-        # (o roteador tende a confundir "acho que e Strategy" com uma pergunta conceitual)
         if state.get("intencao") == "exercicio" and intencao not in {"exercicio", "fora_escopo"}:
             intencao = "avaliacao"
         return {**base, "intencao": intencao}
@@ -187,7 +179,7 @@ def montar_grafo(llm, rag_service=None):
 
         outro_idioma = mudou_de_idioma(rascunho)
 
-        # regras deterministicas: nao gastam uma chamada ao modelo
+        # nao gastam chamada
         if outro_idioma:
             veredito = "REVISAR: a resposta mudou de idioma. Escreva tudo em portugues do Brasil."
         elif codigo_demais:
